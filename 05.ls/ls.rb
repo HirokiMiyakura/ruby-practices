@@ -11,13 +11,13 @@ private
 
 def change_filetype_format(ftype)
   {
-      'file' => '-',
-      'directory' => 'd',
-      'characterSpecial' => 'c',
-      'blockSpecial' => 'b',
-      'fifo' => 'p',
-      'link' => 'l',
-      'socket' => 's'
+    'file' => '-',
+    'directory' => 'd',
+    'characterSpecial' => 'c',
+    'blockSpecial' => 'b',
+    'fifo' => 'p',
+    'link' => 'l',
+    'socket' => 's'
   }[ftype]
 end
 
