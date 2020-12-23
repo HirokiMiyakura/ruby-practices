@@ -5,7 +5,7 @@
 require 'optparse'
 require 'etc'
 
-file_and_directory = Dir.glob('*').sort
+files = Dir.glob('*').sort
 
 private
 
@@ -58,24 +58,24 @@ end
 
 opt.parse(ARGV)
 
-file_and_directory = Dir.glob('*', File::FNM_DOTMATCH).sort if option_hash[:a]
-file_and_directory = file_and_directory.reverse if option_hash[:r]
+files = Dir.glob('*', File::FNM_DOTMATCH).sort if option_hash[:a]
+files = files.reverse if option_hash[:r]
 
 if option_hash[:l]
-  total = file_and_directory.sum { |a| File.stat(a).blocks }
+  total = files.sum { |file| File.stat(file).blocks }
   puts "total #{total}"
-  file_and_directory.each do |file_or_directory|
+  files.each do |file_or_directory|
     stat = File.stat(file_or_directory)
     file_type = change_filetype_format(stat.ftype)
     file_mode = change_file_mode_format(stat.mode)
     owner_name = get_owner_name(stat.uid).name
     group_name = get_group_name(stat.gid).name
     formatted_time = change_time_format(stat.mtime)
-    print "#{file_type}#{file_mode} #{stat.nlink} #{owner_name} #{group_name} #{stat.size} #{formatted_time} \
-#{file_or_directory}\n"
+    puts "#{file_type}#{file_mode} #{stat.nlink} #{owner_name} #{group_name} #{stat.size} #{formatted_time} \
+#{file_or_directory}"
   end
 else
-  file_and_directory.each_slice(3) do |file_or_directory|
+  files.each_slice(3) do |file_or_directory|
     puts "#{file_or_directory[0]} #{file_or_directory[1]} #{file_or_directory[2]}"
   end
 end
