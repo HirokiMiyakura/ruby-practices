@@ -1,72 +1,73 @@
 # frozen_string_literal: true
 
 # !/usr/bin/env ruby
-
 require 'optparse'
-opt = ARGV.getopts('l')
-filename = ARGV
-
-private
 
 def count_lines(file)
-  file.count("\n").to_s.rjust(7)
+  file.count("\n")
 end
 
 def count_words(file)
-  file.split(/\s+/).size.to_s.rjust(7)
+  file.split(/\s+/).size
 end
 
 def count_bytes(file)
-  file.bytesize.to_s.rjust(7)
+  file.bytesize
 end
 
-if filename == []
+def format_value(value)
+  value.to_s.rjust(7)
+end
+
+def print_values(*args)
+  print args.join(' ')
+end
+
+opts = ARGV.getopts('l')
+line_count_only = opts['l']
+filenames = ARGV
+
+if filenames == []
   input = $stdin.read
-  input_lines = count_lines(input)
-  input_words = count_words(input)
-  input_bytes = count_bytes(input)
-  if opt['l']
-    print input_lines
+  line_count = format_value(count_lines(input))
+  word_count = format_value(count_words(input))
+  byte_count = format_value(count_bytes(input))
+  if line_count_only
+    print line_count
   else
-    print [input_lines, input_words, input_bytes].join(' ')
+    print_values(line_count, word_count, byte_count)
   end
   print "\n"
 end
 
-filename.each do |file|
-  lines = count_lines(File.read(file))
-  if opt['l']
-    print [lines, file].join(' ')
+total_line_count = 0
+total_word_count = 0
+total_byte_count = 0
+filenames.each do |filename|
+  text = File.read(filename)
+  line_count = format_value(count_lines(text))
+  if line_count_only
+    print_values(line_count, filename)
   else
-    words = count_words(File.read(file))
-    fsize = count_bytes(File.read(file))
-    print [lines, words, fsize, file].join(' ')
+    word_count = format_value(count_words(text))
+    byte_count = format_value(count_bytes(text))
+    print_values(line_count, word_count, byte_count, filename)
   end
   print "\n"
+
+  total_line_count += line_count.to_i
+  total_word_count += word_count.to_i
+  total_byte_count += byte_count.to_i
 end
 
-total_lines = []
-total_words = []
-total_bytes = []
-filename.each do |file|
-  lines = File.read(file).count("\n")
-  words = File.read(file).split(/\s+/).size
-  fsize = File.stat(file).size
-  next unless filename.size >= 2
-
-  total_lines << lines
-  total_words << words
-  total_bytes << fsize
-end
-
-if total_lines.size >= 2 && total_words.size >= 2 && total_bytes.size >= 2
-  total_lines = total_lines.sum.to_s.rjust(7)
-  total_words = total_words.sum.to_s.rjust(7)
-  total_bytes = total_bytes.sum.to_s.rjust(7)
-  if opt['l']
-    print [total_lines, 'total'].join(' ')
+if filenames.size >= 2
+  total_line_count = format_value(total_line_count)
+  total_word_count = format_value(total_word_count)
+  total_byte_count = format_value(total_byte_count)
+  if line_count_only
+    print_values(total_line_count, 'total')
   else
-    print [total_lines, total_words, total_bytes, 'total'].join(' ')
+    print_values(total_line_count, total_word_count, total_byte_count, 'total')
   end
   print "\n"
 end
