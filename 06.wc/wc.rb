@@ -19,24 +19,31 @@ def format_value(value)
   value.to_s.rjust(7)
 end
 
-def print_values(*args)
-  puts args.join(' ')
+def print_values(*values, filename: nil)
+  format_values = values.map { |v| format_value(v) }
+  puts [*format_values, filename].compact.join(' ')
 end
 
 opts = ARGV.getopts('l')
-line_count_only = opts['l']
+LINE_COUNT_ONLY = opts['l']
+
+def count_and_output_args(text, filename: nil)
+  line_count = count_lines(text)
+  word_count = count_words(text)
+  byte_count = count_bytes(text)
+  if LINE_COUNT_ONLY
+    print_values(line_count, filename: filename)
+  else
+    print_values(line_count, word_count, byte_count, filename: filename)
+  end
+  [line_count, word_count, byte_count]
+end
+
 filenames = ARGV
 
 if filenames.empty?
   input = $stdin.read
-  line_count = count_lines(input)
-  word_count = count_words(input)
-  byte_count = count_bytes(input)
-  if line_count_only
-    puts format_value(line_count)
-  else
-    print_values(format_value(line_count), format_value(word_count), format_value(byte_count))
-  end
+  count_and_output_args(input)
 end
 
 total_line_count = 0
@@ -44,14 +51,7 @@ total_word_count = 0
 total_byte_count = 0
 filenames.each do |filename|
   text = File.read(filename)
-  line_count = count_lines(text)
-  word_count = count_words(text)
-  byte_count = count_bytes(text)
-  if line_count_only
-    print_values(format_value(line_count), filename)
-  else
-    print_values(format_value(line_count), format_value(word_count), format_value(byte_count), filename)
-  end
+  line_count, word_count, byte_count = count_and_output_args(text, filename: filename)
 
   total_line_count += line_count
   total_word_count += word_count
@@ -59,9 +59,9 @@ filenames.each do |filename|
 end
 
 if filenames.size >= 2
-  if line_count_only
-    print_values(format_value(total_line_count), 'total')
+  if LINE_COUNT_ONLY
+    print_values(total_line_count, filename: 'total')
   else
-    print_values(format_value(total_line_count), format_value(total_word_count), format_value(total_byte_count), 'total')
+    print_values(total_line_count, total_word_count, total_byte_count, filename: 'total')
   end
 end
