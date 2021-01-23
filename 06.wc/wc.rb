@@ -24,14 +24,11 @@ def print_values(*values, filename: nil)
   puts [*format_values, filename].compact.join(' ')
 end
 
-opts = ARGV.getopts('l')
-line_count_only = opts['l']
-
-def count_and_output_values_from_text(text, filename: nil, line_count_only: false)
+def count_and_output_values_from_text(text, filename: nil, l_option: false)
   line_count = count_lines(text)
   word_count = count_words(text)
   byte_count = count_bytes(text)
-  if line_count_only
+  if l_option
     print_values(line_count, filename: filename)
   else
     print_values(line_count, word_count, byte_count, filename: filename)
@@ -39,11 +36,13 @@ def count_and_output_values_from_text(text, filename: nil, line_count_only: fals
   [line_count, word_count, byte_count]
 end
 
+opts = ARGV.getopts('l')
+line_count_only = opts['l']
 filenames = ARGV
 
 if filenames.empty?
   input = $stdin.read
-  count_and_output_values_from_text(input, filename: nil, line_count_only: line_count_only)
+  count_and_output_values_from_text(input, filename: nil, l_option: line_count_only)
 end
 
 total_line_count = 0
@@ -51,8 +50,9 @@ total_word_count = 0
 total_byte_count = 0
 filenames.each do |filename|
   text = File.read(filename)
-  line_count, word_count, byte_count = count_and_output_values_from_text(text, filename: filename, line_count_only:
-      line_count_only)
+  line_count, word_count, byte_count = count_and_output_values_from_text(
+    text, filename: filename, l_option: line_count_only
+  )
 
   total_line_count += line_count
   total_word_count += word_count
